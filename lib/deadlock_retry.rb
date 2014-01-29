@@ -16,8 +16,8 @@ module DeadlockRetry
       "Lock wait timeout exceeded",
       "deadlock detected"
     ]
-
     MAXIMUM_RETRIES_ON_DEADLOCK = 5
+    MAXIMUM_SLEEP = 5
 
     def transaction_with_deadlock_handling(*objects, &block)
       retry_count = 0
@@ -40,15 +40,12 @@ module DeadlockRetry
 
     private
 
-    WAIT_TIMES = [1, 2, 3, 4, 5]
-
     def incremental_pause(count)
-      sec = WAIT_TIMES[count-1] || 5
+      sec = [count, MAXIMUM_SLEEP].min
       sleep(sec)
     end
 
     def in_nested_transaction?
-      # open_transactions was added in 2.2's connection pooling changes.
       connection.open_transactions != 0
     end
 
