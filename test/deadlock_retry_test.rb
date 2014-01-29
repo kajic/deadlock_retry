@@ -56,10 +56,6 @@ class DeadlockRetryTest < Test::Unit::TestCase
   DEADLOCK_ERROR = "MySQL::Error: Deadlock found when trying to get lock"
   TIMEOUT_ERROR = "MySQL::Error: Lock wait timeout exceeded"
 
-  def setup
-    MockModel.stubs(:exponential_pause)
-  end
-
   def test_no_errors
     assert_equal :success, MockModel.transaction { :success }
   end
@@ -91,13 +87,6 @@ class DeadlockRetryTest < Test::Unit::TestCase
   def test_included_by_default
     assert ActiveRecord::Base.respond_to?(:transaction_with_deadlock_handling)
   end
-
-  def test_innodb_status_availability
-    DeadlockRetry.innodb_status_cmd = nil
-    MockModel.transaction {}
-    assert_equal "show innodb status", DeadlockRetry.innodb_status_cmd
-  end
-
 
   def test_error_in_nested_transaction_should_retry_outermost_transaction
     tries = 0
